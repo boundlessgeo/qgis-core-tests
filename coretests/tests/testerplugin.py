@@ -48,8 +48,26 @@ def functionalTests():
     testBrowserAddWmts.addStep('Try to add layer "112 Par satellite" from the Browser to QGIS canvas. Check that QGIS prompts for date and after setting a date layer added to canvas and visible.')
     testBrowserAddWmts.setCleanup(lambda: _removeWmtsConnection())
 
+    # Verify if message log shows errors
+    logTest = Test("Verify in-app message log has no errors for default install. QGIS-62")
+    logTest.addStep("Open log messages panel",
+                    prestep=lambda:_openLogMessagesDialog())
+    logTest.addStep("Review 'General' tab output. Check it has no errors",
+                    isVerifyStep=True)
+    logTest.addStep("Check there are no errors in 'Plugins' tab",
+                    isVerifyStep=True)
+    logTest.addStep("If exists, check there are no errors in 'Python warning' tab",
+                    isVerifyStep=True)
+    logTest.addStep("If exists, check there are no errors in 'Qt' tab",
+                    isVerifyStep=True)
+    logTest.addStep("Review the Init Script, check there are no errors in 'Qt' tab",
+                    isVerifyStep=True)
+    logTest.addStep("Review any other existing tabs, check that there are no errors",
+                    isVerifyStep=True)
+
     return [testAdvancedSettings,
-            testBrowserAddWmts
+            testBrowserAddWmts,
+            logTest
            ]
 
 
@@ -78,3 +96,7 @@ def _removeWmtsConnection():
   settings.remove('qgis/connections-wms/TesterPlugin')
   settings.remove('qgis/WMS/TesterPlugin')
   iface.browserModel().reload()
+
+def _openLogMessagesDialog():
+    widgets = [el for el in iface.mainWindow().children() if el.objectName() == "MessageLog"]
+    widgets[0].setVisible(True)
